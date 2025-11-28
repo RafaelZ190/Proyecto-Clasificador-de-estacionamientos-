@@ -8,8 +8,9 @@ Este proyecto implementa un modelo de inteligencia artificial diseñado para ide
 🔗 Visualizar el Proyecto
 
 Puedes probar el clasificador directamente en tu navegador sin necesidad de cámara web ni instalaciones adicionales:
-[
+
 📹 Video presentación : https://youtu.be/aYM6LIlxFkQ
+
 🌐Prueba de modelo : https://rafaelz190.github.io/Proyecto-Clasificador-de-estacionamientos-/
 
 Nota: El sistema no utiliza webcam. Solo acepta imágenes generadas desde el generador de estacionamientos o imágenes reales que el usuario decida cargar.
