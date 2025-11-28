@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador Completo de Estacionamiento</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+        h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        .controls {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .category-section {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #ecf0f1;
+        }
+        .category-section:last-child {
+            border-bottom: none;
+        }
+        .category-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        button, label.btn-classify {
+            padding: 12px 20px;
+            font-size: 14px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        button:hover, label.btn-classify:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .btn-occupied {
+            background: #e74c3c;
+            color: white;
+        }
+        .btn-occupied:hover {
+            background: #c0392b;
+        }
+        .btn-empty {
+            background: #27ae60;
+            color: white;
+        }
+        .btn-empty:hover {
+            background: #229954;
+        }
+        .btn-disabled {
+            background: #9b59b6;
+            color: white;
+        }
+        .btn-disabled:hover {
+            background: #8e44ad;
+        }
+        .btn-obstructed {
+            background: #e67e22;
+            color: white;
+        }
+        .btn-obstructed:hover {
+            background: #d35400;
+        }
+        .btn-dirty {
+            background: #95a5a6;
+            color: white;
+        }
+        .btn-dirty:hover {
+            background: #7f8c8d;
+        }
+        .btn-download {
+            background: #3498db;
+            color: white;
+            flex-grow: 1;
+        }
+        .btn-download:hover {
+            background: #2980b9;
+        }
+        .btn-clear {
+            background: #34495e;
+            color: white;
+        }
+        .btn-clear:hover {
+            background: #2c3e50;
+        }
+        .btn-classify {
+            background: #16a085;
+            color: white;
+            flex-grow: 1;
+        }
+        .btn-classify:hover {
+            background: #138d75;
+        }
+        .canvas-container {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+        canvas {
+            border: 3px solid #34495e;
+            border-radius: 8px;
+            max-width: 100%;
+            height: auto;
+        }
+        .info {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .info h3 {
+            margin-top: 0;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .tip {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 5px;
+        }
+        .prediction-box {
+            background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚗 Generador Completo de Estacionamiento</h1>
+        <p>Crea imágenes variadas para un modelo robusto en Teachable Machine</p>
+    </div>
+
+    <div class="controls">
+        <div class="category-section">
+            <div class="category-title">🚗 Espacios Básicos</div>
+            <div class="button-group">
+                <button class="btn-occupied" onclick="generateParking('occupied')">🚗 Espacio Ocupado</button>
+                <button class="btn-empty" onclick="generateParking('empty')">⬜ Espacio Vacío</button>
+            </div>
+        </div>
+
+        <div class="category-section">
+            <div class="category-title">♿ Espacios Especiales</div>
+            <div class="button-group">
+                <button class="btn-disabled" onclick="generateParking('disabled-empty')">♿ Minusválidos Vacío</button>
+                <button class="btn-disabled" onclick="generateParking('disabled-occupied')">♿ Minusválidos Ocupado</button>
+            </div>
+        </div>
+
+        <div class="category-section">
+            <div class="category-title">⚠️ Espacios con Problemas</div>
+            <div class="button-group">
+                <button class="btn-obstructed" onclick="generateParking('obstructed')">🚧 Obstruido/Cerrado</button>
+                <button class="btn-dirty" onclick="generateParking('dirty')">🗑️ Con Basura/Sucio</button>
+            </div>
+        </div>
+
+        <div class="category-section">
+            <div class="button-group">
+                <label for="imageUpload" class="btn-classify" style="cursor: pointer; display: inline-block; margin: 0;">
+                    📤 Subir y Clasificar Imagen
+                </label>
+                <input type="file" id="imageUpload" accept="image/*" style="display: none;" onchange="uploadAndClassify(event)">
+                <button class="btn-download" onclick="downloadImage()">💾 Descargar Imagen</button>
+                <button class="btn-clear" onclick="clearCanvas()">🗑️ Limpiar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="canvas-container">
+        <canvas id="parkingCanvas" width="224" height="224"></canvas>
+        <p id="currentType" style="margin-top: 10px; font-weight: bold; color: #34495e;"></p>
+        <div class="prediction-box" id="predictionLabel">🤖 Esperando clasificación...</div>
+    </div>
+
+    <div class="stats">
+        <div class="stat-box">
+            <div class="stat-number" id="occupiedCount">0</div>
+            <div class="stat-label">Ocupados</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number" id="emptyCount">0</div>
+            <div class="stat-label">Vacíos</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number" id="disabledCount">0</div>
+            <div class="stat-label">Minusválidos</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number" id="obstructedCount">0</div>
+            <div class="stat-label">Obstruidos</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number" id="dirtyCount">0</div>
+            <div class="stat-label">Con Basura</div>
+        </div>
+    </div>
+
+    <div class="info">
+        <h3>📋 Instrucciones para Teachable Machine</h3>
+        <ol>
+            <li><strong>Genera al menos 15-20 imágenes de cada categoría</strong></li>
+            <li><strong>Descarga cada imagen</strong> (el nombre incluye la categoría)</li>
+            <li><strong>En Teachable Machine crea estas clases:</strong>
+                <ul>
+                    <li>✅ <strong>Vacío</strong> - Espacios disponibles normales</li>
+                    <li>🚗 <strong>Ocupado</strong> - Con auto estacionado</li>
+                    <li>♿ <strong>Minusválidos Vacío</strong> - Disponible para discapacitados</li>
+                    <li>♿ <strong>Minusválidos Ocupado</strong> - Ocupado por vehículo autorizado</li>
+                    <li>🚧 <strong>Obstruido</strong> - Bloqueado o cerrado temporalmente</li>
+                    <li>🗑️ <strong>Sucio/Basura</strong> - Necesita limpieza antes de usar</li>
+                </ul>
+            </li>
+            <li><strong>Sube las imágenes correspondientes a cada clase</strong></li>
+            <li><strong>¡Entrena tu modelo!</strong></li>
+            <li><strong>Exporta el modelo y coloca los archivos model.json y metadata.json en la misma carpeta</strong></li>
+            <li><strong>Usa "📤 Subir y Clasificar Imagen" para probar imágenes reales</strong></li>
+        </ol>
+        <div class="tip">
+            <strong>💡 Consejo Pro:</strong> Cada imagen generada tiene variaciones aleatorias en colores, posiciones y elementos. Genera múltiples versiones de cada tipo para un modelo más robusto. Después de entrenar, prueba con imágenes reales usando el botón de subir.
+        </div>
+    </div>
+
+    <!-- TEACHABLE MACHINE -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.7.4/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
+
+    <script>
+        const canvas = document.getElementById('parkingCanvas');
+        const ctx = canvas.getContext('2d');
+        let counts = {
+            occupied: 0,
+            empty: 0,
+            disabled: 0,
+            obstructed: 0,
+            dirty: 0
+        };
+        let currentType = null;
+        let tmModel = null;
+
+        // Cargar modelo de Teachable Machine
+        async function loadModel() {
+            try {
+                console.log("⏳ Cargando modelo...");
+                const modelURL = "./model.json";
+                const metadataURL = "./metadata.json";
+                tmModel = await tmImage.load(modelURL, metadataURL);
+                console.log("✅ Modelo cargado correctamente");
+                document.getElementById('predictionLabel').textContent = "✅ Modelo listo. ¡Genera y clasifica!";
+            } catch (error) {
+                console.error("❌ Error cargando el modelo:", error);
+                document.getElementById('predictionLabel').textContent = "⚠️ Modelo no encontrado (genera imágenes primero)";
+            }
+        }
+
+        loadModel();
+
+        async function classifyCanvas() {
+            if (!tmModel) {
+                document.getElementById('predictionLabel').textContent = "⚠️ Primero entrena tu modelo en Teachable Machine";
+                return;
+            }
+
+            try {
+                const prediction = await tmModel.predict(canvas);
+                let maxProb = 0;
+                let label = "";
+
+                prediction.forEach(p => {
+                    if (p.probability > maxProb) {
+                        maxProb = p.probability;
+                        label = p.className;
+                    }
+                });
+
+                const percentage = (maxProb * 100).toFixed(1);
+                document.getElementById('predictionLabel').textContent = `🔍 Predicción: ${label} (${percentage}%)`;
+            } catch (error) {
+                console.error("Error clasificando:", error);
+            }
+        }
+
+        async function uploadAndClassify(event) {
+            if (!tmModel) {
+                document.getElementById('predictionLabel').textContent = "⚠️ Primero entrena tu modelo en Teachable Machine";
+                return;
+            }
+
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const img = new Image();
+                img.onload = async function() {
+                    // Limpiar canvas y dibujar la imagen
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // Calcular dimensiones para mantener aspecto
+                    const scale = Math.min(canvas.width / img.width, canvas.height / img.height);
+                    const x = (canvas.width / 2) - (img.width / 2) * scale;
+                    const y = (canvas.height / 2) - (img.height / 2) * scale;
+                    
+                    ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+                    
+                    document.getElementById('currentType').textContent = '📤 Imagen Subida';
+                    
+                    // Clasificar la imagen
+                    try {
+                        const prediction = await tmModel.predict(canvas);
+                        let maxProb = 0;
+                        let label = "";
+
+                        prediction.forEach(p => {
+                            if (p.probability > maxProb) {
+                                maxProb = p.probability;
+                                label = p.className;
+                            }
+                        });
+
+                        const percentage = (maxProb * 100).toFixed(1);
+                        document.getElementById('predictionLabel').textContent = `🔍 Predicción: ${label} (${percentage}%)`;
+                    } catch (error) {
+                        console.error("Error clasificando:", error);
+                        document.getElementById('predictionLabel').textContent = "❌ Error al clasificar imagen";
+                    }
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+            
+            // Resetear el input para permitir subir la misma imagen otra vez
+            event.target.value = '';
+        }
+
+        function generateParking(type) {
+            currentType = type;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawAsphalt();
+            drawParkingLines();
+
+            switch(type) {
+                case 'occupied':
+                    drawCar();
+                    counts.occupied++;
+                    document.getElementById('occupiedCount').textContent = counts.occupied;
+                    document.getElementById('currentType').textContent = '🚗 Espacio Ocupado';
+                    break;
+                case 'empty':
+                    counts.empty++;
+                    document.getElementById('emptyCount').textContent = counts.empty;
+                    document.getElementById('currentType').textContent = '⬜ Espacio Vacío';
+                    break;
+                case 'disabled-empty':
+                    drawDisabledSymbol();
+                    counts.disabled++;
+                    document.getElementById('disabledCount').textContent = counts.disabled;
+                    document.getElementById('currentType').textContent = '♿ Minusválidos Vacío';
+                    break;
+                case 'disabled-occupied':
+                    drawDisabledSymbol();
+                    drawCar();
+                    counts.disabled++;
+                    document.getElementById('disabledCount').textContent = counts.disabled;
+                    document.getElementById('currentType').textContent = '♿ Minusválidos Ocupado';
+                    break;
+                case 'obstructed':
+                    drawObstruction();
+                    counts.obstructed++;
+                    document.getElementById('obstructedCount').textContent = counts.obstructed;
+                    document.getElementById('currentType').textContent = '🚧 Espacio Obstruido';
+                    break;
+                case 'dirty':
+                    drawTrash();
+                    counts.dirty++;
+                    document.getElementById('dirtyCount').textContent = counts.dirty;
+                    document.getElementById('currentType').textContent = '🗑️ Espacio con Basura';
+                    break;
+            }
+
+            // Clasificar automáticamente después de generar
+            setTimeout(classifyCanvas, 200);
+        }
+
+        function drawAsphalt() {
+            const grayShade = 40 + Math.random() * 30;
+            ctx.fillStyle = `rgb(${grayShade}, ${grayShade}, ${grayShade + 10})`;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 0; i < 150; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                const shade = Math.random() * 20;
+                ctx.fillStyle = `rgba(${grayShade + shade}, ${grayShade + shade}, ${grayShade + shade}, 0.3)`;
+                ctx.fillRect(x, y, 2, 2);
+            }
+        }
+
+        function drawParkingLines() {
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(20, 0);
+            ctx.lineTo(20, canvas.height);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(canvas.width - 20, 0);
+            ctx.lineTo(canvas.width - 20, canvas.height);
+            ctx.stroke();
+        }
+
+        function drawCar() {
+            const colors = ['#c0392b', '#2980b9', '#27ae60', '#f39c12', '#8e44ad', '#34495e', '#e74c3c', '#3498db', '#1abc9c', '#d35400', '#7f8c8d', '#2c3e50'];
+            const carColor = colors[Math.floor(Math.random() * colors.length)];
+            const carWidth = 100 + Math.random() * 20;
+            const carHeight = 140 + Math.random() * 20;
+            const carX = (canvas.width - carWidth) / 2 + (Math.random() - 0.5) * 15;
+            const carY = (canvas.height - carHeight) / 2 + (Math.random() - 0.5) * 15;
+
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            ctx.fillRect(carX + 5, carY + carHeight - 10, carWidth, 15);
+            ctx.fillStyle = carColor;
+            ctx.fillRect(carX, carY + 30, carWidth, carHeight - 30);
+            ctx.beginPath();
+            ctx.moveTo(carX + 15, carY + 30);
+            ctx.lineTo(carX + 15, carY + 10);
+            ctx.lineTo(carX + carWidth - 15, carY + 10);
+            ctx.lineTo(carX + carWidth - 15, carY + 30);
+            ctx.closePath();
+            ctx.fill();
+            ctx.fillStyle = 'rgba(100, 100, 120, 0.8)';
+            ctx.fillRect(carX + 20, carY + 15, carWidth - 40, 20);
+            ctx.fillStyle = '#f1c40f';
+            ctx.fillRect(carX + 10, carY + carHeight - 10, 15, 8);
+            ctx.fillRect(carX + carWidth - 25, carY + carHeight - 10, 15, 8);
+            ctx.fillStyle = '#2c3e50';
+            ctx.fillRect(carX + 10, carY + 40, 15, 20);
+            ctx.fillRect(carX + carWidth - 25, carY + 40, 15, 20);
+            ctx.fillRect(carX + 10, carY + carHeight - 40, 15, 20);
+            ctx.fillRect(carX + carWidth - 25, carY + carHeight - 40, 15, 20);
+        }
+
+        function drawDisabledSymbol() {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const size = 60;
+            ctx.fillStyle = '#3498db';
+            ctx.fillRect(centerX - size/2, centerY - size/2, size, size);
+            ctx.strokeStyle = 'white';
+            ctx.fillStyle = 'white';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(centerX + 5, centerY - 15, 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(centerX + 5, centerY - 9);
+            ctx.lineTo(centerX + 5, centerY + 5);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(centerX, centerY + 15, 15, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(centerX + 15, centerY + 5, 5, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(centerX + 5, centerY + 5);
+            ctx.lineTo(centerX + 15, centerY + 5);
+            ctx.stroke();
+        }
+
+        function drawObstruction() {
+            const numCones = 2 + Math.floor(Math.random() * 2);
+            for (let i = 0; i < numCones; i++) {
+                const x = 60 + Math.random() * 100;
+                const y = 60 + Math.random() * 100;
+                ctx.fillStyle = '#e67e22';
+                ctx.beginPath();
+                ctx.moveTo(x, y + 30);
+                ctx.lineTo(x - 15, y + 50);
+                ctx.lineTo(x + 15, y + 50);
+                ctx.closePath();
+                ctx.fill();
+                ctx.fillStyle = 'white';
+                ctx.fillRect(x - 12, y + 35, 24, 4);
+                ctx.fillRect(x - 10, y + 42, 20, 4);
+                ctx.fillStyle = '#34495e';
+                ctx.fillRect(x - 18, y + 50, 36, 5);
+            }
+            ctx.strokeStyle = '#f1c40f';
+            ctx.lineWidth = 4;
+            ctx.setLineDash([10, 5]);
+            ctx.beginPath();
+            ctx.moveTo(30, 180);
+            ctx.lineTo(194, 180);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        function drawTrash() {
+            const trashItems = 3 + Math.floor(Math.random() * 3);
+            for (let i = 0; i < trashItems; i++) {
+                const x = 50 + Math.random() * 120;
+                const y = 50 + Math.random() * 120;
+                const type = Math.floor(Math.random() * 4);
+                switch(type) {
+                    case 0:
+                        ctx.fillStyle = '#ecf0f1';
+                        ctx.fillRect(x, y, 15 + Math.random() * 10, 12 + Math.random() * 8);
+                        break;
+                    case 1:
+                        ctx.fillStyle = '#95a5a6';
+                        ctx.fillRect(x, y, 8, 15);
+                        ctx.fillStyle = '#7f8c8d';
+                        ctx.fillRect(x, y, 8, 3);
+                        break;
+                    case 2:
+                        ctx.fillStyle = 'rgba(52, 73, 94, 0.6)';
+                        ctx.beginPath();
+                        ctx.arc(x, y, 10 + Math.random() * 5, 0, Math.PI * 2);
+                        ctx.fill();
+                        break;
+                    case 3:
+                        ctx.fillStyle = '#8B4513';
+                        for (let j = 0; j < 3; j++) {
+                            ctx.fillRect(x + j * 3, y + j * 2, 5, 5);
+                        }
+                        break;
+                }
+            }
+            for (let i = 0; i < 2; i++) {
+                const x = 60 + Math.random() * 100;
+                const y = 60 + Math.random() * 100;
+                ctx.fillStyle = 'rgba(40, 40, 45, 0.5)';
+                ctx.beginPath();
+                ctx.ellipse(x, y, 20 + Math.random() * 15, 12 + Math.random() * 8, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function downloadImage() {
+            if (!currentType) {
+                alert('¡Primero genera una imagen!');
+                return;
+            }
+            const link = document.createElement('a');
+            const timestamp = Date.now();
+            link.download = `parking_${currentType}_${timestamp}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#ecf0f1';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            currentType = null;
+            document.getElementById('currentType').textContent = '';
+            document.getElementById('predictionLabel').textContent = '🤖 Canvas limpio';
+        }
+
+        clearCanvas();
+    </script>
+</body>
+</html>
